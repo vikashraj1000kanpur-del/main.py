@@ -7,18 +7,19 @@ import threading
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# ⚠️ आपका नया टोकन यहाँ जोड़ दिया गया है
+# ⚠️ आपका नया टोकन यहाँ जुड़ा हुआ है
 BOT_TOKEN = "8306462663:AAE78G1JccISKjk5pTbsOcskoGwhn8NXqpE"
 
-# 🎬 डेटाबेस: यहाँ कुकू टीवी लिंक्स और उनके सामने टेराबॉक्स/जीड्राइव लिंक्स सेट हैं
+# 🎬 डेटाबेस: यहाँ कुकू टीवी लिंक्स और उनके सामने सीधे .mkv डाउनलोड होने वाले गूगल ड्राइव लिंक्स सेट हैं
 DATABASE = {
-    "https://kukutv.app": {
-        "title": "The Key Lord | Thriller Series",
-        "download_url": "https://terabox.com" # यहाँ बाद में अपना असली फाइल लिंक बदल सकते हैं
+    "https://kukutv.app/show/legacy-of-betrayal": {
+        "title": "Legacy of Betrayal | Drama Series",
+        # 🟢 ध्यान दें: नीचे दी गई ID (1A2B3C4...) को हटाकर अपनी असली गूगल ड्राइव फाइल की ID डाल दें
+        "download_url": "https://google.com"
     },
     "https://kukutv.app": {
-        "title": "The Gangster King | Action Series",
-        "download_url": "https://terabox.com"
+        "title": "The Key Lord | Thriller Series",
+        "download_url": "https://google.com"
     }
 }
 
@@ -37,7 +38,7 @@ def run_web_server():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
-        "👋 नमस्ते! मैं आपका नया Kuku TV Auto-Downloader बॉट हूँ।\n\n"
+        "👋 नमस्ते! मैं आपका नया Kuku TV Auto-Downloader बॉट हूँ。\n\n"
         "मुझे कुकू टीवी का लिंक भेजें, मैं आपको तुरंत डाउनलोड फाइल दे दूंगा! 🎬"
     )
 
@@ -47,7 +48,8 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     matched = False
     for db_link, video_info in DATABASE.items():
-        if db_link in user_link or user_link in db_link or "the-key-lord" in user_link.lower():
+        # लिंक मैच करने का स्मार्ट तरीका
+        if db_link in user_link or user_link in db_link or "legacy-of-betrayal" in user_link.lower() or "the-key-lord" in user_link.lower():
             video_title = video_info["title"]
             video_url = video_info["download_url"]
             success_text = (
@@ -75,3 +77,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
