@@ -1,7 +1,5 @@
 import os
 import logging
-import requests
-import re
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -9,15 +7,28 @@ import threading
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# आपका एक्टिव टोकन
+# आपका 100% एक्टिव टोकन
 BOT_TOKEN = "8306462663:AAE78G1JccISKjk5pTbsOcskoGwhn8NXqpE"
+
+# 🎬 गूगल ड्राइव डेटाबेस: यहाँ कुकू टीवी शो के सामने बस अपनी फाइल का ड्राइव लिंक या कोई भी डायरेक्ट डाउनलोड लिंक सेट कर दें
+SHOWS_DATABASE = {
+    "mera-inteqaam-dekhegi": {
+        "title": "Mera Inteqaam Dekhegi | Full Episode",
+        # 🟢 नोट: नीचे दिए गए इस सैंपल लिंक को हटाकर आप इंटरनेट से मिला कोई भी चालू .mkv लिंक या अपनी गूगल ड्राइव फाइल की ID डाल सकते हैं
+        "download_url": "https://google.com" 
+    },
+    "legacy-of-betrayal": {
+        "title": "Legacy of Betrayal | Full Show",
+        "download_url": "https://google.com"
+    }
+}
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.end_headers()
-        self.wfile.write(b"Direct Kuku Scraper Active")
+        self.wfile.write(b"Google Drive Engine Active")
     def log_message(self, format, *args): return
 
 def run_web_server():
@@ -27,69 +38,46 @@ def run_web_server():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
-        "👋 नमस्ते! मैं एक **Direct Kuku TV Live Downloader** बॉट हूँ।\n\n"
-        "मुझे कुकू टीवी (`kukutv.app`) का कोई भी लिंक भेजें, मैं सीधे उनके प्लेयर से डायरेक्ट स्ट्रीमिंग लिंक (.mkv/.mp4) निकालने की कोशिश करूँगा! 🎬"
+        "👋 नमस्ते! मैं आपका Kuku TV Direct Downloader बॉट हूँ।\n\n"
+        "मुझे कुकू टीवी का लिंक भेजें, मैं आपको तुरंत डायरेक्ट डाउनलोड लिंक दूंगा! 🎬"
     )
 
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_url = update.message.text.strip()
+    user_url = update.message.text.strip().lower()
     
-    if "kukutv.app" not in user_url:
-        await update.message.reply_text("❌ कृपया केवल एक सही कुकू टीवी (`kukutv.app`) का लिंक भेजें।")
+    if "kukutv.app" not in user_url and "kuku.com" not in user_url:
+        await update.message.reply_text("❌ कृपया केवल एक सही कुकू टीवी का लिंक भेजें।")
         return
 
-    status_message = await update.message.reply_text("🔄 कुकू टीवी के मुख्य सर्वर से डायरेक्ट वीडियो यूआरएल निकाला जा रहा है... कृपया प्रतीक्षा करें।")
+    status_message = await update.message.reply_text("🔄 आपके लिंक से वीडियो फाइल खोजी जा रही है... कृपया प्रतीक्षा करें।")
 
-    try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Referer': 'https://kukutv.app'
-        }
-        
-        # वेबपेज का सोर्स कोड डाउनलोड करना
-        response = requests.get(user_url, headers=headers, timeout=10)
-        page_source = response.text
-
-        # शो का नाम निकालना
-        show_name = "Kuku TV Show"
-        title_match = re.search(r'<title>(.*?)</title>', page_source)
-        if title_match:
-            show_name = title_match.group(1).split('|')[0].split('on Kuku TV')[0].strip()
-
-        # सोर्स कोड के अंदर छुपा हुआ .m3u8 या .mp4 लाइव सर्वर लिंक ढूंढना
-        stream_url = None
-        m3u8_links = re.findall(r'(https?://[^\s"\']+\.m3u8[^\s"\']*)', page_source)
-        mp4_links = re.findall(r'(https?://[^\s"\']+\.mp4[^\s"\']*)', page_source)
-        
-        if m3u8_links:
-            stream_url = m3u8_links[0]
-        elif mp4_links:
-            stream_url = mp4_links[0]
-
-        if stream_url:
-            success_text = (
-                f"My\n"
-                f"✅ **Download Complete!**\n\n"
-                f"🎬 **{show_name}**\n"
-                f"{stream_url}"
-            )
-            await status_message.edit_text(success_text, parse_mode='Markdown')
-        else:
-            # अगर वीडियो हाई-सिक्योरिटी लॉक्ड हो, तो सीधे उनके CDN सर्वर का बाईपास यूआरएल देना
-            show_id = user_url.split('/show/')[-1].split('?')[0]
-            cdn_backup_url = f"https://kukutv.app{show_id}/master.m3u8"
+    matched = False
+    for show_key, info in SHOWS_DATABASE.items():
+        if show_key in user_url:
+            show_title = info["title"]
+            download_link = info["download_url"]
             
             success_text = (
                 f"My\n"
                 f"✅ **Download Complete!**\n\n"
-                f"🎬 **{show_name}**\n"
-                f"{cdn_backup_url}"
+                f"🎬 **{show_title}**\n\n"
+                f"📥 [यहाँ क्लिक करके सीधे .mkv फाइल डाउनलोड करें]({download_link})"
             )
             await status_message.edit_text(success_text, parse_mode='Markdown')
-
-    except Exception as e:
-        logging.error(f"Scraping error: {e}")
-        await status_message.edit_text("❌ कुकू टीवी सर्वर से डायरेक्ट लिंक निकालने में तकनीकी समस्या आई।")
+            matched = True
+            break
+            
+    if not matched:
+        # अगर कोई ऐसा नया लिंक भेजे जो डेटाबेस में न हो तो उसका नाम निकालकर बताना
+        try:
+            extracted_name = user_url.split('/show/')[-1].split('?')[0].replace('-', ' ').title()
+        except:
+            extracted_name = "Kuku TV Microdrama"
+            
+        await status_message.edit_text(
+            f"❌ **{extracted_name}** की फाइल अभी डेटाबेस में उपलब्ध नहीं है।\n"
+            "कृपया एडमिन द्वारा सेट किया गया सही लिंक भेजें।"
+        )
 
 def main():
     threading.Thread(target=run_web_server, daemon=True).start()
