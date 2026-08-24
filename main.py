@@ -10,11 +10,11 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 # --- सेटिंग्स ---
 BOT_TOKEN = "8306462663:AAE_p6_Al0yfvi-Ha_A34nD3Dx2_3Ndtrgc"
-ADMIN_ID = 8529632128  # ✅ विकास राज, आपकी असली Telegram ID यहाँ सेट कर दी गई है
+ADMIN_ID = 8529632128  # आपकी असली Telegram ID
 
 DB_FILE = "approved_users.json"
 
-# --- डेटाबेस फंक्शन्स (यूजर्स को हमेशा के लिए सुरक्षित रखने के लिए) ---
+# --- डेटाबेस फंक्शन्स ---
 def load_approved_users():
     if os.path.exists(DB_FILE):
         try:
@@ -35,6 +35,17 @@ def save_approved_user(user_id):
     except Exception as e:
         logging.error(f"Error saving to DB: {e}")
 
+# 🔴 यूजर को हटाने (Disapprove) के लिए फंक्शन
+def remove_approved_user(user_id):
+    approved_users = load_approved_users()
+    if user_id in approved_users:
+        approved_users.remove(user_id)
+    try:
+        with open(DB_FILE, "w") as f:
+            json.dump(list(approved_users), f)
+    except Exception as e:
+        logging.error(f"Error removing from DB: {e}")
+
 # 🎬 कुकू टीवी शोज़ का डेटाबेस
 SHOWS_DATABASE = { 
     "mera-inteqaam-dekhegi": { 
@@ -47,7 +58,7 @@ SHOWS_DATABASE = {
     }
 }
 
-# --- वेब सर्वर (Render/Koyeb के लिए) ---
+# --- वेब सर्वर ---
 class HealthCheckHandler(BaseHTTPRequestHandler): 
     def do_GET(self): 
         self.send_response(200) 
@@ -69,7 +80,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
     current_approved = load_approved_users()
     
-    # ❌ अगर यूजर अप्रूव्ड नहीं है, तो बॉट उसकी ID जनरेट करके दिखाएगा
     if user.id not in current_approved:
         await update.message.reply_text(
             f"👋 Hi {user.first_name}! You need admin approval.\n"
@@ -77,14 +87,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             parse_mode='Markdown'
         )
         
-        # 🕵️‍♂️ यह अलर्ट सीधे आपके (विकास राज) पास आएगा
         admin_alert = (
             f"👤 **New Approval Request!**\n\n"
             f"📛 Name: {user.full_name}\n"
             f"🆔 ID: `{user.id}`\n"
             f"🔗 Username: @{user.username if user.username else 'None'}\n\n"
-            f"इस यूजर को अप्रूव करने के लिए नीचे दी गई कमांड पर क्लिक करके भेजें:\n"
-            f"`/approve {user.id}`"
+            f"अप्रूव करने के लिए: `/approve {user.id}`\n"
+            f"भविष्य में हटाने के लिए: `/disapprove {user.id}`"
         )
         try:
             await context.bot.send_message(chat_id=ADMIN_ID, text=admin_alert, parse_mode='Markdown')
@@ -92,44 +101,61 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             logging.error(f"Failed to send alert to admin: {e}")
         return
 
-    # ✅ अगर यूजर अप्रूव्ड है (या आप खुद हैं)
     await update.message.reply_text( 
         "👋 नमस्ते! Vikash Raj Bot में आपका स्वागत है। 🤖 मैं आपका Kuku TV Direct Downloader बॉट हूँ।\n\n" 
         "मुझे कुकू टीवी का लिंक भेजें, मैं आपको तुरंत डायरेक्ट डाउनलोड लिंक दूंगा! 🎬"
     )
 
-# 2. /approve कमांड (सिर्फ विकास राज के लिए काम करेगी)
+# 2. /approve कमांड
 async def approve_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
-    
     if user.id != ADMIN_ID:
         return
-        
     if not context.args:
-        await update.message.reply_text("❌ कृपया आईडी साथ में लिखें। उदाहरण: `/approve 1106698349`", parse_mode='Markdown')
+        await update.message.reply_text("❌ कृपया आईडी साथ में लिखें। उदाहरण: `/approve 1106698349`")
         return
-        
     try:
         target_id = int(context.args[0])
         save_approved_user(target_id)
-        
         await update.message.reply_text(f"✅ User ID `{target_id}` को सफलतापूर्वक अप्रूव कर दिया गया है!", parse_mode='Markdown')
-        
-        # यूजर को ऑटो-मैसेज जाएगा कि वह अब बॉट इस्तेमाल कर सकता है
         try:
             await context.bot.send_message(
                 chat_id=target_id, 
-                text="🎉 **बधाई हो!** एडमिन (**Vikash Raj**) ने आपका अनुरोध स्वीकार कर लिया है।\n\n"
-                     "अब आप बॉट का इस्तेमाल कर सकते हैं! दोबारा चालू करने के लिए /start दबाएं।",
-                parse_mode='Markdown'
+                text="🎉 **बधाई हो!** एडमिन (**Vikash Raj**) ने आपका अनुरोध स्वीकार कर लिया है।\n\nअब आप बॉट का इस्तेमाल कर सकते हैं! दोबारा चालू करने के लिए /start दबाएं।"
             )
         except Exception as e:
             logging.error(f"Could not notify user {target_id}: {e}")
-            
     except (ValueError, IndexError):
         await update.message.reply_text("❌ कृपया एक सही Telegram ID दर्ज करें।")
 
-# 3. लिंक हैंडलर फंक्शन
+# 🛑 3. /disapprove कमांड (यूजर को अप्रूवल लिस्ट से हटाने के लिए)
+async def disapprove_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    if user.id != ADMIN_ID:
+        return
+    if not context.args:
+        await update.message.reply_text("❌ कृपया आईडी साथ में लिखें। उदाहरण: `/disapprove 1106698349`")
+        return
+    try:
+        target_id = int(context.args[0])
+        if target_id == ADMIN_ID:
+            await update.message.reply_text("❌ आप खुद को लिस्ट से नहीं हटा सकते!")
+            return
+            
+        remove_approved_user(target_id)
+        await update.message.reply_text(f"🗑️ User ID `{target_id}` को अप्रूवल लिस्ट से हटा दिया गया है। अब यह बॉट उपयोग नहीं कर पाएगा।", parse_mode='Markdown')
+        
+        try:
+            await context.bot.send_message(
+                chat_id=target_id, 
+                text="⚠️ **सूचना:** एडमिन ने आपके बॉट का एक्सेस बंद कर दिया है। अब आप इस बॉट का इस्तेमाल नहीं कर सकते।"
+            )
+        except Exception as e:
+            logging.error(f"Could not notify user {target_id}: {e}")
+    except (ValueError, IndexError):
+        await update.message.reply_text("❌ कृपया एक सही Telegram ID दर्ज करें।")
+
+# 4. लिंक हैंडलर फंक्शन
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None: 
     user = update.effective_user
     current_approved = load_approved_users()
@@ -152,7 +178,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             download_link = info["download_url"] 
             
             success_text = ( 
-                f"🤖 bot : Vikash Raj\n\n" 
+                f"🤖 Bot : Vikash Raj\n\n" 
                 f"✅ Download Complete!\n\n" 
                 f"🎬 {show_title}\n\n" 
                 f"📥 [यहाँ क्लिक करके सीधे .mkv फाइल डाउनलोड करें]({download_link})" 
@@ -163,7 +189,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             
     if not matched: 
         try: 
-            extracted_name = user_url.split('/show/')[-1].split('?')[0].replace('-', ' ').title() 
+            extracted_name = user_url.split('/show/')[-1].split('?').replace('-', ' ').title() 
         except: 
             extracted_name = "Kuku TV Microdrama" 
         await status_message.edit_text( 
@@ -177,10 +203,11 @@ def main():
     
     application.add_handler(CommandHandler("start", start)) 
     application.add_handler(CommandHandler("approve", approve_user))
+    application.add_handler(CommandHandler("disapprove", disapprove_user)) # नई हटाओ कमांड
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_link)) 
     
     application.run_polling()
 
 if __name__ == '__main__': 
     main()
-    
+                
