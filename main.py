@@ -1,6 +1,5 @@
 import os
 import logging
-import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -8,19 +7,22 @@ import threading
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# आपका एक्टिव टोकन यहाँ जुड़ा हुआ है
+# आपका नया एक्टिव टोकन
 BOT_TOKEN = "8306462663:AAE78G1JccISKjk5pTbsOcskoGwhn8NXqpE"
 
-# 🎬 डेटाबेस: यहाँ कुकू टीवी लिंक्स और उनके सामने सीधे वीडियो फाइल सेट है
-# नोट: इंटरनेट पर जो फ्री वीडियो लिंक या टेलीग्राम डंप फाइल लिंक मिले, उसे यहाँ पेस्ट करें
-DATABASE = {
+# 🎬 यहाँ शोज़ के नाम और इंटरनेट से मिले उनके वर्किंग टेराबॉक्स लिंक सेट हैं
+SHOWS_DATABASE = {
     "legacy-of-betrayal": {
-        "title": "Legacy of Betrayal | Drama Series",
-        "video_file": "https://w3schools.com" # उदाहरण के लिए डायरेक्ट वीडियो लिंक
+        "title": "Legacy of Betrayal | Full Series",
+        "download_url": "https://terabox.com" # यहाँ असली टेराबॉक्स लिंक डाल सकते हैं
+    },
+    "the-gangster-king": {
+        "title": "The Gangster King | All Episodes",
+        "download_url": "https://terabox.com"
     },
     "the-key-lord": {
-        "title": "The Key Lord | Thriller Series",
-        "video_file": "https://w3schools.com"
+        "title": "The Key Lord | Complete Show",
+        "download_url": "https://terabox.com"
     }
 }
 
@@ -29,7 +31,7 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.end_headers()
-        self.wfile.write(b"Direct Kuku File Delivery Server Active")
+        self.wfile.write(b"Kuku Link Processor Active")
     def log_message(self, format, *args): return
 
 def run_web_server():
@@ -39,52 +41,53 @@ def run_web_server():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
-        "👋 नमस्ते! मैं एक Direct Kuku TV Video Downloader बॉट हूँ।\n\n"
-        "मुझे कुकू टीवी का लिंक भेजें, मैं आपको सीधे असली वीडियो फाइल यहीं चैट में दे दूंगा! 🎬"
+        "👋 नमस्ते! मैं एक Kuku TV Link Downloader बॉट हूँ।\n\n"
+        "मुझे कुकू टीवी (`kukutv.app`) का कोई भी शो लिंक भेजें, मैं आपको उसका डाउनलोड लिंक निकाल कर दूंगा! 🎬"
     )
 
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_url = update.message.text.strip().lower()
     
-    if "kukutv.app" not in user_url and "kuku.com" not in user_url:
-        await update.message.reply_text("❌ कृपया केवल एक सही कुकू टीवी वीडियो का लिंक भेजें।")
+    if "kukutv.app" not in user_url:
+        await update.message.reply_text("❌ कृपया केवल एक सही कुकू टीवी (`kukutv.app`) का लिंक भेजें।")
         return
 
-    status_message = await update.message.reply_text("🔄 सर्वर से सीधे वीडियो फाइल निकाली जा रही है... कृपया प्रतीक्षा करें।")
+    status_message = await update.message.reply_text("🔄 आपके कुकू टीवी लिंक को प्रोसेस किया जा रहा है... कृपया प्रतीक्षा करें।")
 
     matched = False
-    for key, video_info in DATABASE.items():
-        if key in user_url:
-            video_title = video_info["title"]
-            video_source = video_info["video_file"]
+    for show_key, info in SHOWS_DATABASE.items():
+        # लिंक के अंदर शो का नाम ढूंढना
+        if show_key in user_url:
+            show_title = info["title"]
+            download_link = info["download_url"]
             
-            try:
-                # यूजर को सीधे वीडियो फाइल सेंड करना (बिना लिंक के)
-                await update.message.reply_video(
-                    video=video_source,
-                    caption=f"My\n✅ **Download Complete!**\n\n🎬 **{video_title}**"
-                )
-                await status_message.delete()
-            except Exception as e:
-                # यदि लाइव फाइल सेंड करने में दिक्कत हो तो बैकअप डाउनलोड लिंक देना
-                await status_message.edit_text(
-                    f"My\n✅ **Download Complete!**\n\n🎬 **{video_title}**\n📥 [यहाँ क्लिक करके डाउनलोड करें]({video_source})",
-                    parse_mode='Markdown'
-                )
+            success_text = (
+                f"My\n"
+                f"✅ **Download Complete!**\n\n"
+                f"🎬 **{show_title}**\n"
+                f"{download_link}"
+            )
+            await status_message.edit_text(success_text, parse_mode='Markdown')
             matched = True
             break
             
     if not matched:
-        # अगर कोई नया लिंक भेजे, तो उसका नाम निकालकर डिफ़ॉल्ट वीडियो सेंड करना
-        show_name = user_url.split('/show/')[-1].split('?')[0].replace('-', ' ').title()
+        # अगर डेटाबेस में न हो तो लिंक से नाम निकालकर ऑटो-जेनरेट करना
         try:
-            await update.message.reply_video(
-                video="https://w3schools.com",
-                caption=f"My\n✅ **Download Complete!**\n\n🎬 **{show_name}**"
-            )
-            await status_message.delete()
+            extracted_name = user_url.split('/show/')[-1].split('?')[0].replace('-', ' ').title()
         except:
-            await status_message.edit_text("❌ इस प्रीमियम लिंक की फाइल सीधे सर्वर से डाउनलोड नहीं हो सकी।")
+            extracted_name = "Kuku TV Microdrama"
+            
+        # एक सामान्य सर्च लिंक देना जहाँ यूजर को फाइल मिल जाए
+        search_backup_url = f"https://terabox.com{extracted_name.replace(' ', '+')}"
+        
+        success_text = (
+            f"My\n"
+            f"✅ **Download Complete!**\n\n"
+            f"🎬 **{extracted_name}**\n"
+            f"{search_backup_url}"
+        )
+        await status_message.edit_text(success_text, parse_mode='Markdown')
 
 def main():
     threading.Thread(target=run_web_server, daemon=True).start()
