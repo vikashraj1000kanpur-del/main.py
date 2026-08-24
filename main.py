@@ -94,7 +94,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # ✅ अगर यूजर अप्रूव्ड है (या आप खुद हैं)
     await update.message.reply_text( 
-        "👋 नमस्ते! **Vikash Raj Bot** में आपका स्वागत है। 🤖 मैं आपका Kuku TV Direct Downloader बॉट हूँ।\n\n" 
+        "👋 नमस्ते! Vikash Raj Bot में आपका स्वागत है। 🤖 मैं आपका Kuku TV Direct Downloader बॉट हूँ।\n\n" 
         "मुझे कुकू टीवी का लिंक भेजें, मैं आपको तुरंत डायरेक्ट डाउनलोड लिंक दूंगा! 🎬"
     )
 
@@ -152,9 +152,9 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             download_link = info["download_url"] 
             
             success_text = ( 
-                f"🤖 **बॉट बाय: Vikash Raj**\n\n" 
-                f"✅ **Download Complete!**\n\n" 
-                f"🎬 **{show_title}**\n\n" 
+                f"🤖 bot : Vikash Raj\n\n" 
+                f"✅ Download Complete!\n\n" 
+                f"🎬 {show_title}\n\n" 
                 f"📥 [यहाँ क्लिक करके सीधे .mkv फाइल डाउनलोड करें]({download_link})" 
             ) 
             await status_message.edit_text(success_text, parse_mode='Markdown', disable_web_page_preview=True) 
