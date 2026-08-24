@@ -88,7 +88,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         
         admin_alert = (
-            f"👤 **New Approval Request!**\n\n"
+            f"👤 New Approval Request!\n\n"
             f"📛 Name: {user.full_name}\n"
             f"🆔 ID: `{user.id}`\n"
             f"🔗 Username: @{user.username if user.username else 'None'}\n\n"
@@ -121,7 +121,7 @@ async def approve_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         try:
             await context.bot.send_message(
                 chat_id=target_id, 
-                text="🎉 **बधाई हो!** एडमिन (**Vikash Raj**) ने आपका अनुरोध स्वीकार कर लिया है।\n\nअब आप बॉट का इस्तेमाल कर सकते हैं! दोबारा चालू करने के लिए /start दबाएं।"
+                text="🎉 बधाई हो! 🎉 एडमिन  Vikash Raj ने आपका अनुरोध स्वीकार कर लिया है।\n\nअब आप बॉट का इस्तेमाल कर सकते हैं! दोबारा चालू करने के लिए /start दबाएं।"
             )
         except Exception as e:
             logging.error(f"Could not notify user {target_id}: {e}")
@@ -148,7 +148,7 @@ async def disapprove_user(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         try:
             await context.bot.send_message(
                 chat_id=target_id, 
-                text="⚠️ **सूचना:** एडमिन ने आपके बॉट का एक्सेस बंद कर दिया है। अब आप इस बॉट का इस्तेमाल नहीं कर सकते।"
+                text="⚠️ सूचना: एडमिन ने आपके बॉट का एक्सेस बंद कर दिया है। अब आप इस बॉट का इस्तेमाल नहीं कर सकते।"
             )
         except Exception as e:
             logging.error(f"Could not notify user {target_id}: {e}")
@@ -193,7 +193,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         except: 
             extracted_name = "Kuku TV Microdrama" 
         await status_message.edit_text( 
-            f"❌ **{extracted_name}** की फाइल अभी डेटाबेस में उपलब्ध नहीं है।\n" 
+            f"❌ {extracted_name} की फाइल अभी डेटाबेस में उपलब्ध नहीं है।\n" 
             "कृपया एडमिन द्वारा सेट किया गया सही लिंक भेजें।" 
         )
 
