@@ -8,7 +8,7 @@ import threading
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # आपका 100% एक्टिव टोकन
-BOT_TOKEN = "8306462663:AAE78G1JccISKjk5pTbsOcskoGwhn8NXqpE"
+BOT_TOKEN = "8306462663:AAFJjo4HnjLNq-LadPvpdLyihXQGOHhJ4Tw    "
 
 # 🎬 गूगल ड्राइव डेटाबेस: यहाँ कुकू टीवी शो के सामने बस अपनी फाइल का ड्राइव लिंक या कोई भी डायरेक्ट डाउनलोड लिंक सेट कर दें
 SHOWS_DATABASE = {
