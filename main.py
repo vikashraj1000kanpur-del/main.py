@@ -14,7 +14,7 @@ BOT_TOKEN = "8306462663:AAE78G1JccISKjk5pTbsOcskoGwhn8NXqpE"
 SHOWS_DATABASE = {
     "legacy-of-betrayal": {
         "title": "Legacy of Betrayal | Full Series",
-        "download_url": "https://terabox.com" # यहाँ असली टेराबॉक्स लिंक डाल सकते हैं
+        "download_url": "https://terabox.com"
     },
     "the-gangster-king": {
         "title": "The Gangster King | All Episodes",
@@ -52,11 +52,10 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.reply_text("❌ कृपया केवल एक सही कुकू टीवी (`kukutv.app`) का लिंक भेजें।")
         return
 
-    status_message = await update.message.reply_text("🔄 आपके कुकू टीवी लिंक को प्रोसेस किया जा रहा है... कृपया प्रतीक्षा करें।")
+    status_message = await update.message.reply_text("🔄 आपके कुकू टीवी लिंक को प्रोसेस किया जा रहा... कृपया प्रतीक्षा करें।")
 
     matched = False
     for show_key, info in SHOWS_DATABASE.items():
-        # लिंक के अंदर शो का नाम ढूंढना
         if show_key in user_url:
             show_title = info["title"]
             download_link = info["download_url"]
@@ -72,14 +71,16 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             break
             
     if not matched:
-        # अगर डेटाबेस में न हो तो लिंक से नाम निकालकर ऑटो-जेनरेट करना
+        # यहाँ एरर को ठीक कर दिया गया है ताकि सही टेराबॉक्स लिंक बने
         try:
-            extracted_name = user_url.split('/show/')[-1].split('?')[0].replace('-', ' ').title()
+            raw_name = user_url.split('/show/')[-1].split('?')[0]
+            extracted_name = raw_name.replace('-', ' ').title()
         except:
             extracted_name = "Kuku TV Microdrama"
+            raw_name = "kuku"
             
-        # एक सामान्य सर्च लिंक देना जहाँ यूजर को फाइल मिल जाए
-        search_backup_url = f"https://terabox.com{extracted_name.replace(' ', '+')}"
+        # एकदम सही टेराबॉक्स सर्च लिंक फॉर्मेट
+        search_backup_url = f"https://terabox.com{raw_name}"
         
         success_text = (
             f"My\n"
