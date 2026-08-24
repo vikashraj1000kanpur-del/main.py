@@ -39,7 +39,7 @@ def run_web_server():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None: 
     # 🌟 आपका नया हिंदी स्वागत संदेश यहाँ सेट कर दिया गया है
     await update.message.reply_text( 
-        "👋 नमस्ते! **Vikash Raj Bot** में आपका स्वागत है। 🤖 मैं आपका Kuku TV Direct Downloader बॉट हूँ।\n\n" 
+        "👋 नमस्ते! Vikash Raj Bot में आपका स्वागत है। 🤖 मैं आपका Kuku TV Direct Downloader बॉट हूँ।\n\n" 
         "मुझे कुकू टीवी का लिंक भेजें, मैं आपको तुरंत डायरेक्ट डाउनलोड लिंक दूंगा! 🎬"
     )
 
@@ -59,9 +59,9 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             
             # सक्सेस मैसेज (इसमें भी आपका नाम सेट है)
             success_text = ( 
-                f"🤖 **बॉट बाय: Vikash Raj**\n\n" 
-                f"✅ **Download Complete!**\n\n" 
-                f"🎬 **{show_title}**\n\n" 
+                f"🤖 bot: Vikash Raj \n\n" 
+                f"✅  Download Complete! \n\n" 
+                f"🎬  {show_title}\n\n" 
                 f"📥 [यहाँ क्लिक करके सीधे .mkv फाइल डाउनलोड करें]({download_link})" 
             ) 
             await status_message.edit_text(success_text, parse_mode='Markdown', disable_web_page_preview=True) 
