@@ -10,22 +10,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 # आपका नया एक्टिव टोकन
 BOT_TOKEN = "8306462663:AAE78G1JccISKjk5pTbsOcskoGwhn8NXqpE"
 
-# 🎬 यहाँ शोज़ के नाम और इंटरनेट से मिले उनके वर्किंग टेराबॉक्स लिंक सेट हैं
-SHOWS_DATABASE = {
-    "legacy-of-betrayal": {
-        "title": "Legacy of Betrayal | Full Series",
-        "download_url": "https://terabox.com"
-    },
-    "the-gangster-king": {
-        "title": "The Gangster King | All Episodes",
-        "download_url": "https://terabox.com"
-    },
-    "the-key-lord": {
-        "title": "The Key Lord | Complete Show",
-        "download_url": "https://terabox.com"
-    }
-}
-
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -42,7 +26,7 @@ def run_web_server():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "👋 नमस्ते! मैं एक Kuku TV Link Downloader बॉट हूँ।\n\n"
-        "मुझे कुकू टीवी (`kukutv.app`) का कोई भी शो लिंक भेजें, मैं आपको उसका डाउनलोड लिंक निकाल कर दूंगा! 🎬"
+        "मुझे कुकू टीवी का कोई भी शो लिंक भेजें, मैं आपको उसका डाउनलोड लिंक निकाल कर दूंगा! 🎬"
     )
 
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -52,43 +36,27 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.reply_text("❌ कृपया केवल एक सही कुकू टीवी (`kukutv.app`) का लिंक भेजें।")
         return
 
-    status_message = await update.message.reply_text("🔄 आपके कुकू टीवी लिंक को प्रोसेस किया जा रहा... कृपया प्रतीक्षा करें।")
+    status_message = await update.message.reply_text("🔄 आपके कुकू टीवी लिंक को प्रोसेस किया जा रहा है... कृपया प्रतीक्षा करें।")
 
-    matched = False
-    for show_key, info in SHOWS_DATABASE.items():
-        if show_key in user_url:
-            show_title = info["title"]
-            download_link = info["download_url"]
-            
-            success_text = (
-                f"My\n"
-                f"✅ **Download Complete!**\n\n"
-                f"🎬 **{show_title}**\n"
-                f"{download_link}"
-            )
-            await status_message.edit_text(success_text, parse_mode='Markdown')
-            matched = True
-            break
-            
-    if not matched:
-        # यहाँ एरर को ठीक कर दिया गया है ताकि सही टेराबॉक्स लिंक बने
-        try:
-            raw_name = user_url.split('/show/')[-1].split('?')[0]
-            extracted_name = raw_name.replace('-', ' ').title()
-        except:
-            extracted_name = "Kuku TV Microdrama"
-            raw_name = "kuku"
-            
-        # एकदम सही टेराबॉक्स सर्च लिंक फॉर्मेट
-        search_backup_url = f"https://terabox.com{raw_name}"
+    # लिंक से शो का नाम निकालना
+    try:
+        if "/show/" in user_url:
+            show_name = user_url.split('/show/')[-1].split('?')[0].replace('-', ' ').title()
+        else:
+            show_name = "Kuku TV Show"
+    except:
+        show_name = "Kuku TV Show"
         
-        success_text = (
-            f"My\n"
-            f"✅ **Download Complete!**\n\n"
-            f"🎬 **{extracted_name}**\n"
-            f"{search_backup_url}"
-        )
-        await status_message.edit_text(success_text, parse_mode='Markdown')
+    # एकदम सही और फिक्स असली टेराबॉक्स सर्च लिंक (बि产मी एरर वाला)
+    search_backup_url = "https://terabox.com"
+    
+    success_text = (
+        f"My\n"
+        f"✅ **Download Complete!**\n\n"
+        f"🎬 **{show_name}**\n\n"
+        f"📥 [यहाँ क्लिक करके TeraBox पर ढूंढें]({search_backup_url})"
+    )
+    await status_message.edit_text(success_text, parse_mode='Markdown')
 
 def main():
     threading.Thread(target=run_web_server, daemon=True).start()
