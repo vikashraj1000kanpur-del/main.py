@@ -37,19 +37,19 @@ def run_web_server():
     server.serve_forever()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None: 
-    # यहाँ इंग्लिश में आपका नाम सेट कर दिया गया है
+    # 🌟 आपका नया हिंदी स्वागत संदेश यहाँ सेट कर दिया गया है
     await update.message.reply_text( 
-        "👋 Hello! I am **Vikash Raj**, your Kuku TV Direct Downloader Bot.\n\n" 
-        "Send me any Kuku TV link, and I will instantly provide you the direct download link! 🎬" 
+        "👋 नमस्ते! **Vikash Raj Bot** में आपका स्वागत है। 🤖 मैं आपका Kuku TV Direct Downloader बॉट हूँ।\n\n" 
+        "मुझे कुकू टीवी का लिंक भेजें, मैं आपको तुरंत डायरेक्ट डाउनलोड लिंक दूंगा! 🎬"
     )
 
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None: 
     user_url = update.message.text.strip().lower() 
     if "kukutv.app" not in user_url and "kuku.com" not in user_url: 
-        await update.message.reply_text("❌ Please send a valid Kuku TV link.") 
+        await update.message.reply_text("❌ कृपया केवल एक सही कुकू टीवी का लिंक भेजें।") 
         return 
         
-    status_message = await update.message.reply_text("🔄 Checking your link, please wait...") 
+    status_message = await update.message.reply_text("🔄 आपके लिंक से वीडियो फाइल खोजी जा रही है... कृपया प्रतीक्षा करें।") 
     matched = False 
     
     for show_key, info in SHOWS_DATABASE.items(): 
@@ -57,12 +57,12 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             show_title = info["title"] 
             download_link = info["download_url"] 
             
-            # सक्सेस मैसेज में भी क्रेडिट चेंज कर दिया गया है
+            # सक्सेस मैसेज (इसमें भी आपका नाम सेट है)
             success_text = ( 
-                f"🤖 **Bot By: Vikash Raj**\n\n" 
+                f"🤖 **बॉट बाय: Vikash Raj**\n\n" 
                 f"✅ **Download Complete!**\n\n" 
                 f"🎬 **{show_title}**\n\n" 
-                f"📥 [Click here to download .mkv file directly]({download_link})" 
+                f"📥 [यहाँ क्लिक करके सीधे .mkv फाइल डाउनलोड करें]({download_link})" 
             ) 
             await status_message.edit_text(success_text, parse_mode='Markdown', disable_web_page_preview=True) 
             matched = True 
@@ -74,8 +74,8 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         except: 
             extracted_name = "Kuku TV Microdrama" 
         await status_message.edit_text( 
-            f"❌ **{extracted_name}** is not available in our database yet.\n" 
-            "Please try again later or contact the admin." 
+            f"❌ **{extracted_name}** की फाइल अभी डेटाबेस में उपलब्ध नहीं है।\n" 
+            "कृपया एडमिन द्वारा सेट किया गया सही लिंक भेजें।" 
         )
 
 def main(): 
