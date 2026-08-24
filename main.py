@@ -10,7 +10,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 # --- सेटिंग्स ---
 BOT_TOKEN = "8306462663:AAE_p6_Al0yfvi-Ha_A34nD3Dx2_3Ndtrgc"
-ADMIN_ID = 123456789  # ⚠️ यहाँ अपनी असली Telegram User ID डालें
+ADMIN_ID = 8529632128  # ✅ विकास राज, आपकी असली Telegram ID यहाँ सेट कर दी गई है
 
 DB_FILE = "approved_users.json"
 
@@ -64,21 +64,20 @@ def run_web_server():
 
 # --- बॉट कमांड्स ---
 
-# 1. /start कमांड (ऑटोमेटिक यूजर आईडी जनरेटर के साथ)
+# 1. /start कमांड
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None: 
     user = update.effective_user
     current_approved = load_approved_users()
     
-    # ❌ अगर यूजर अप्रूव्ड नहीं है, तो बॉट अपने आप उसकी ID जनरेट करके दिखाएगा
+    # ❌ अगर यूजर अप्रूव्ड नहीं है, तो बॉट उसकी ID जनरेट करके दिखाएगा
     if user.id not in current_approved:
-        # यूजर को उसका नाम और आईडी दिखेगी
         await update.message.reply_text(
             f"👋 Hi {user.first_name}! You need admin approval.\n"
             f"Your Telegram ID: `{user.id}`",
             parse_mode='Markdown'
         )
         
-        # एडमिन (विकास राज) को अलर्ट जाएगा कि इस आईडी को अप्रूव करें
+        # 🕵️‍♂️ यह अलर्ट सीधे आपके (विकास राज) पास आएगा
         admin_alert = (
             f"👤 **New Approval Request!**\n\n"
             f"📛 Name: {user.full_name}\n"
@@ -93,13 +92,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             logging.error(f"Failed to send alert to admin: {e}")
         return
 
-    # ✅ अगर यूजर अप्रूव्ड है
+    # ✅ अगर यूजर अप्रूव्ड है (या आप खुद हैं)
     await update.message.reply_text( 
         "👋 नमस्ते! **Vikash Raj Bot** में आपका स्वागत है। 🤖 मैं आपका Kuku TV Direct Downloader बॉट हूँ।\n\n" 
         "मुझे कुकू टीवी का लिंक भेजें, मैं आपको तुरंत डायरेक्ट डाउनलोड लिंक दूंगा! 🎬"
     )
 
-# 2. /approve कमांड (सिर्फ एडमिन के लिए)
+# 2. /approve कमांड (सिर्फ विकास राज के लिए काम करेगी)
 async def approve_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
     
@@ -112,7 +111,7 @@ async def approve_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         
     try:
         target_id = int(context.args[0])
-        save_approved_user(target_id)  # फाइल में हमेशा के लिए सेव करें
+        save_approved_user(target_id)
         
         await update.message.reply_text(f"✅ User ID `{target_id}` को सफलतापूर्वक अप्रूव कर दिया गया है!", parse_mode='Markdown')
         
@@ -184,4 +183,4 @@ def main():
 
 if __name__ == '__main__': 
     main()
-        
+    
