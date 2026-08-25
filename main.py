@@ -4,10 +4,10 @@ import subprocess
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-# Render के Environment Variables से क्रेडेंशियल्स लेना (इन्हें कोड में डायरेक्ट मत लिखना)
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# --- आपके क्रेडेंशियल्स सीधे कोड में जोड़ दिए गए हैं ---
+BOT_TOKEN = "8306462663:AAE_p6_Al0yfvi-Ha_A34nD3Dx2_3Ndtrgc"
+SUPABASE_URL = "https://supabase.co"
+SUPABASE_KEY = "sb_publishable_HgSurnD3QUqmto0VQvtuzA_ih3a4IqF"
 BUCKET_NAME = "kukushare"  # आपके Supabase बकेट का नाम
 
 def get_kuku_all_episodes(user_url):
@@ -64,7 +64,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "👋 नमस्ते! मैं KukuTV/FM Full Length Downloader बोट हूँ।\n\n"
         "मुझे कोई भी Kuku लिंक भेजें। मैं उसके सभी छोटे वीडियो पार्ट्स को आपस में जोड़कर (Merge) एक "
-        "फुल-लेंथ सिंगल वीडियो सीधे आपके Supabase क्लाउड पर अपलोड कर दूँगा और आपको डाउनलोड लिंक दूंगा।"
+        "फुल-लेंथ सिंगल वीडियो सीधे आपके Supabase क्लाउड पर अपलोड कर दूँगा और आपको डायरेक्ट डाउनलोड लिंक दूंगा।"
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -75,7 +75,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     status = await update.message.reply_text("🔍 लिंक को प्रोसेस किया जा रहा है... कृपया प्रतीक्षा करें।")
     
-    # 1. API से सभी वीडियो पार्ट्स की लिस्ट और शो का नाम निकालना
+    # 1. API से सभी वीडियो充पार्ट्स की लिस्ट और शो का नाम निकालना
     episodes_list, title = get_kuku_all_episodes(user_url)
     
     if not episodes_list:
@@ -107,7 +107,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
     # 3. FFmpeg के जरिए वीडियो मर्ज (Merge) करना
-    await status.edit_text("🎬 सभी पार्ट्स को जोड़कर एक फुल-लेंथ वीडियो बनाया जा रहा है (Merging)...")
+    await status.edit_text("🎬 सभी專पार्ट्स को जोड़कर एक फुल-लेंथ वीडियो बनाया जा रहा है (Merging)...")
     final_output = f"{title}_Full.mp4"
     
     merge_success = merge_videos(downloaded_files, final_output)
@@ -158,4 +158,4 @@ if __name__ == "__main__":
     
     print("बोट सफलतापूर्वक चालू हो गया है...")
     app.run_polling()
-    
+                
