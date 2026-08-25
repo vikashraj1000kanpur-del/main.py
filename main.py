@@ -8,7 +8,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 
 # --- आपके बिल्कुल सही क्रेडेंशियल्स सीधे कोड में यहाँ सेट हैं ---
 BOT_TOKEN = "8306462663:AAEzmQ8ayW2LwiFbxyZEHzCIXoZ-gGgx5jI"
-SUPABASE_URL = "https://anxaejixflcatlvdpovy.supabase.co"
+SUPABASE_URL = "https://supabase.co"
 SUPABASE_KEY = "sb_publishable_HgSurnD3QUqmto0VQvtuzA_ih3a4IqF"
 BUCKET_NAME = "kukushare"  # आपके Supabase बकेट का नाम
 
@@ -127,28 +127,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if os.path.exists(final_output):
             os.remove(final_output)
 
-async def main():
-    # नए Python वर्जन्स के लिए क्रैश प्रूफ सेटअप 
+if __name__ == "__main__":
+    # Render और नए Python 3.14+ के लिए सबसे बेहतरीन और स्टेबल तरीका
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("बोट सफलतापूर्वक चालू हो गया है...")
     
-    await application.initialize()
-    await application.start()
-    
-    updater = application.updater
-    await updater.start_polling(allowed_updates=Update.ALL_TYPES)
-    
-    while True:
-        await asyncio.sleep(1)
-
-if __name__ == "__main__":
-    try:
-        if sys.platform == 'win32':
-            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        print("बोट बंद हो गया।")
+    # यह लाइब्रेरी का खुद का ऑफिशियल रनर है जो लूप की समस्या को हल करता है
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
     
