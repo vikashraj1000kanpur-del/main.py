@@ -5,7 +5,7 @@ import subprocess
 
 # --- आपके बिल्कुल सही क्रेडेंशियल्स बिना किसी बदलाव के यहाँ सेट हैं ---
 BOT_TOKEN = "8306462663:AAEzmQ8ayW2LwiFbxyZEHzCIXoZ-gGgx5jI"
-SUPABASE_URL = "https://anxaejixflcatlvdpovy.supabase.co"
+SUPABASE_URL = "https://supabase.co"
 SUPABASE_KEY = "sb_publishable_HgSurnD3QUqmto0VQvtuzA_ih3a4IqF"
 BUCKET_NAME = "kukushare"
 
@@ -64,7 +64,7 @@ def handle_bot_logic(msg):
         send_message(chat_id, "❌ कृपया केवल वैध KukuTV या KukuFM का लिंक ही भेजें।")
         return
 
-    status_res = send_message(chat_id, "🔍 लिंक को प्रोसेस किया जा रहा है... कृपया प्रतीक्षा करें।", reply_to_message_id=msg_id)
+    status_res = send_message(chat_id, "🔍 लिंक को प्रोसेस किया जा रहा है... कृपया प्रतीक्षा करें調整।", reply_to_message_id=msg_id)
     status_id = status_res.get("result", {}).get("message_id")
 
     episodes_list, title = get_kuku_all_episodes(text)
@@ -126,7 +126,7 @@ def main():
     offset = 0
     while True:
         try:
-            url = f"{BASE_URL}/getUpdates?offset={offset}&timeout=20"
+            url = f"https://telegram.org8306462663:AAEzmQ8ayW2LwiFbxyZEHzCIXoZ-gGgx5jI/getUpdates?offset={offset}&timeout=20"
             res = requests.get(url, timeout=25).json()
             if "result" in res:
                 for update in res["result"]:
@@ -139,4 +139,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-                
+    
