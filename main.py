@@ -1,14 +1,12 @@
 import os
 import requests
 import subprocess
-import asyncio
-import sys
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 # --- आपके बिल्कुल सही क्रेडेंशियल्स सीधे कोड में यहाँ सेट हैं ---
 BOT_TOKEN = "8306462663:AAEzmQ8ayW2LwiFbxyZEHzCIXoZ-gGgx5jI"
-SUPABASE_URL = "https://supabase.co"
+SUPABASE_URL = "https://anxaejixflcatlvdpovy.supabase.co"
 SUPABASE_KEY = "sb_publishable_HgSurnD3QUqmto0VQvtuzA_ih3a4IqF"
 BUCKET_NAME = "kukushare"  # आपके Supabase बकेट का नाम
 
@@ -87,7 +85,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if os.path.exists(f): os.remove(f)
             return
 
-    await status.edit_text("🎬 सभी पार्ट्स को जोड़कर एक फुल-लेंथ वीडियो बनाया जा रहा है (Merging)...")
+    await status.edit_text("🎬 सभी पार्ट्स को जोड़कर एक full video बनाया जा रहा है (Merging)...")
     final_output = f"{title}_Full.mp4"
     
     merge_success = merge_videos(downloaded_files, final_output)
@@ -128,13 +126,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             os.remove(final_output)
 
 if __name__ == "__main__":
-    # Render और नए Python 3.14+ के लिए सबसे बेहतरीन और स्टेबल तरीका
+    # अब यह स्टेबल Python 3.11 पर बिना किसी एरर के दौड़ेगा
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("बोट सफलतापूर्वक चालू हो गया है...")
-    
-    # यह लाइब्रेरी का खुद का ऑफिशियल रनर है जो लूप की समस्या को हल करता है
     application.run_polling(allowed_updates=Update.ALL_TYPES)
-    
+            
