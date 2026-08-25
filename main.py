@@ -1,22 +1,18 @@
 import os
 import requests
 import subprocess
+import asyncio
+import sys
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-# ==============================================================
-# ⚠️ आपके क्रेडेंशियल्स सीधे कोड में यहाँ सेट कर दिए गए हैं ⚠️
-# ==============================================================
-BOT_TOKEN = "8306462663:AAE_p6_Al0yfvi-Ha_A34nD3Dx2_3Ndtrgc"
+# --- आपके बिल्कुल सही क्रेडेंशियल्स सीधे कोड में यहाँ सेट हैं ---
+BOT_TOKEN = "8306462663:AAEzmQ8ayW2LwiFbxyZEHzCIXoZ-gGgx5jI"
 SUPABASE_URL = "https://anxaejixflcatlvdpovy.supabase.co"
 SUPABASE_KEY = "sb_publishable_HgSurnD3QUqmto0VQvtuzA_ih3a4IqF"
 BUCKET_NAME = "kukushare"  # आपके Supabase बकेट का नाम
-# ==============================================================
 
 def get_kuku_all_episodes(user_url):
-    """
-    KukuTV/FM लिंक से सभी छोटे वीडियो पार्ट्स (Episodes) के लिंक्स और टाइटल निकालना।
-    """
     try:
         api_url = f"https://bhadoo.cc{user_url}"
         response = requests.get(api_url, timeout=15)
@@ -36,9 +32,6 @@ def get_kuku_all_episodes(user_url):
     return None, None
 
 def merge_videos(video_files, output_filename):
-    """
-    FFmpeg का उपयोग करके सभी डाउनलोड किए गए छोटे वीडियो पार्ट्स को एक सिंगल फाइल में मर्ज करना।
-    """
     list_file = "file_list.txt"
     with open(list_file, "w") as f:
         for video in video_files:
@@ -55,8 +48,8 @@ def merge_videos(video_files, output_filename):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "👋 नमस्ते! मैं KukuTV/FM Full Length Downloader बोट हूँ।\n\n"
-        "मुझे कोई भी Kuku लिंक भेजें। मैं उसके सभी छोटे वीडियो पार्ट्स को आपस में जोड़कर (Merge) एक "
-        "फुल-लेंथ सिंगल वीडियो सीधे आपके Supabase क्लाउड पर अपलोड कर दूँगा और आपको डायरेक्ट डाउनलोड लिंक दूंगा।"
+        "मुझे कोई भी Kuku लिंक भेजें। मैं उसके सभी पार्ट्स को जोड़कर (Merge) एक "
+        "फुल-लेंथ वीडियो सीधे आपके Supabase क्लाउड पर अपलोड कर दूँगा।"
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -78,7 +71,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     downloaded_files = []
     
     for index, media_url in enumerate(episodes_list):
-        await status.edit_text(f"📥 डाउनलोड हो रहा है पार्ट: {index + 1}/{total_parts}...")
+        await status.edit_text(f"📥 डाउनलोड हो रहा है... पार्ट: {index + 1}/{total_parts}")
         part_filename = f"part_{index}.mp4"
         
         try:
@@ -134,11 +127,28 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if os.path.exists(final_output):
             os.remove(final_output)
 
-if __name__ == "__main__":
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+async def main():
+    # नए Python वर्जन्स के लिए क्रैश प्रूफ सेटअप 
+    application = ApplicationBuilder().token(BOT_TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("बोट सफलतापूर्वक चालू हो गया है...")
-    app.run_polling()
+    
+    await application.initialize()
+    await application.start()
+    
+    updater = application.updater
+    await updater.start_polling(allowed_updates=Update.ALL_TYPES)
+    
+    while True:
+        await asyncio.sleep(1)
+
+if __name__ == "__main__":
+    try:
+        if sys.platform == 'win32':
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        print("बोट बंद हो गया।")
     
