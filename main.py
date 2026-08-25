@@ -1,15 +1,17 @@
 import os
 import requests
 import subprocess
-import asyncio
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-# --- आपके क्रेडेंशियल्स सीधे कोड में जोड़ दिए गए हैं ---
+# ==============================================================
+# ⚠️ आपके क्रेडेंशियल्स सीधे कोड में यहाँ सेट कर दिए गए हैं ⚠️
+# ==============================================================
 BOT_TOKEN = "8306462663:AAE_p6_Al0yfvi-Ha_A34nD3Dx2_3Ndtrgc"
 SUPABASE_URL = "https://anxaejixflcatlvdpovy.supabase.co"
 SUPABASE_KEY = "sb_publishable_HgSurnD3QUqmto0VQvtuzA_ih3a4IqF"
 BUCKET_NAME = "kukushare"  # आपके Supabase बकेट का नाम
+# ==============================================================
 
 def get_kuku_all_episodes(user_url):
     """
@@ -67,7 +69,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     episodes_list, title = get_kuku_all_episodes(user_url)
     
     if not episodes_list:
-        await status.edit_text("❌ वीडियो充पार्ट्स निकालने में विफल। लिंक पुराना है या सुरक्षित है।")
+        await status.edit_text("❌ वीडियो पार्ट्स निकालने में विफल। लिंक पुराना है या सुरक्षित है।")
         return
 
     total_parts = len(episodes_list)
@@ -132,24 +134,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if os.path.exists(final_output):
             os.remove(final_output)
 
-async def main():
-    # नए लाइब्रेरी वर्जन के लिए सही स्टार्ट तरीका
+if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("बोट सफलतापूर्वक चालू हो गया है...")
-    async with app:
-        await app.initialize()
-        await app.start()
-        await app.updater.start_polling()
-        # बोट को लगातार चालू रखने के लिए अनंत लूप
-        while True:
-            await asyncio.sleep(3600)
-
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        print("बोट बंद हो गया।")
-        
+    app.run_polling()
+    
