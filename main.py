@@ -7,7 +7,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 
 # --- आपके क्रेडेंशियल्स सीधे कोड में जोड़ दिए गए हैं ---
 BOT_TOKEN = "8306462663:AAE_p6_Al0yfvi-Ha_A34nD3Dx2_3Ndtrgc"
-SUPABASE_URL = "https://supabase.co"
+SUPABASE_URL = "https://anxaejixflcatlvdpovy.supabase.co"
 SUPABASE_KEY = "sb_publishable_HgSurnD3QUqmto0VQvtuzA_ih3a4IqF"
 BUCKET_NAME = "kukushare"  # आपके Supabase बकेट का नाम
 
