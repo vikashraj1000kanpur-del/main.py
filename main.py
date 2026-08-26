@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask
 
-# ==================== अपना टेलीग्राम डेटा यहाँ डालें ====================
+# ==================== सिर्फ अपना टेलीग्राम टोकन यहाँ डालें ====================
 TELEGRAM_BOT_TOKEN = "8804075824:AAGATUZhpndkYtD67doTp7QfUIxFq0ZVn-Y"
 # ====================================================================
 
@@ -13,9 +13,9 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "MicroTV Downloader Bot is Running Perfectly!"
+    return "MicroTV Downloader Bot is Running Automatically without Chat ID!"
 
-# टेलीग्राम पर रिप्लाई भेजने का आसान फंक्शन
+# रिप्लाई भेजने का फंक्शन (यह यूजर की आईडी खुद पकड़ लेगा)
 def send_reply(chat_id, text):
     url = f"https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
@@ -37,7 +37,7 @@ def extract_drama_name(kuku_url):
         print(f"Error fetching KukuTV page: {e}")
     return None
 
-# MicroTV पर जाकर डाउनलोड लिंक ढूंढना
+# MicroTV पर जाकर ड्रामा का डाउनलोड लिंक ढूंढना
 def search_microtv_source(drama_name):
     if not drama_name:
         return None
@@ -57,13 +57,14 @@ def search_microtv_source(drama_name):
         print(f"Error searching on MicroTV: {e}")
     return None
 
-# यह फंक्शन सीधे टेलीग्राम सर्वर से मैसेज खींचेगा (नो वेबहुक टेंशन)
+# टेलीग्राम से मैसेज ऑटोमैटिक रीड करने वाला वर्कर
 def telegram_polling_worker():
     offset = None
-    # अगर पुराना कोई वेबहुक सेट था, तो उसे डिलीट करना ज़रूरी है
+    
+    # पुराना वेबहुक डिलीट करना ताकि पोलिंग मोड सही से चले
     try:
         requests.get(f"https://telegram.org{TELEGRAM_BOT_TOKEN}/deleteWebhook")
-        print("[INFO] Old webhook deleted successfully.")
+        print("[INFO] Webhook cleared for pure polling.")
     except:
         pass
 
@@ -81,20 +82,21 @@ def telegram_polling_worker():
                     
                     if "message" in update and "text" in update["message"]:
                         user_message = update["message"]["text"].strip()
-                        # यहाँ बॉट खुद ही आपकी सही Chat ID पहचान लेगा!
+                        
+                        # यहाँ बॉट खुद ही सामने वाले की सही ID निकाल लेता है
                         user_chat_id = update["message"]["chat"]["id"] 
                         
-                        # 1. अगर यूजर /start भेजता है
+                        # 1. अगर कोई भी यूजर /start भेजता है
                         if user_message == "/start":
-                            send_reply(user_chat_id, "👋 <b>नमस्ते! आपका बॉट पूरी तरह तैयार है।</b>\n\nमुझे किसी भी KukuTV ड्रामा का लिंक भेजें, मैं उसका डाउनलोड लिंक ढूंढ कर दूंगा।")
+                            send_reply(user_chat_id, "👋 <b>नमस्ते! आपका ऑटोमैटिक बॉट पूरी तरह एक्टिव है।</b>\n\nमुझे किसी भी KukuTV ड्रामा का लिंक भेजें, मैं उसका डाउनलोड लिंक ढूंढ कर दूंगा।")
                         
-                        # 2. अगर यूजर KukuTV का लिंक भेजता है
+                        # 2. अगर कोई यूजर KukuTV का लिंक भेजता है
                         elif "kukutv" in user_message or "kuku.tv" in user_message:
-                            send_reply(user_chat_id, "🔄 <b>लिंक मिल गया है! कूकू टीवी से डिटेल्स निकाली जा रही हैं, कृपया रुकें...</b>")
+                            send_reply(user_chat_id, "🔄 <b>लिंक मिल गया है! कूकू टीवी से ड्रामा की डिटेल्स निकाली जा रही हैं, कृपया रुकें...</b>")
                             
                             drama_title = extract_drama_name(user_message)
                             if drama_title:
-                                send_reply(user_chat_id, f"🔍 <b>ड्रामा नाम:</b> {drama_title}\nअब MicroTV पर डायरेक्ट लिंक ढूंढा जा रहा है...")
+                                send_reply(user_chat_id, f"🔍 <b>ड्रामा नाम मिला:</b> {drama_title}\nअब MicroTV पर डायरेक्ट लिंक ढूंढा जा रहा है...")
                                 direct_link = search_microtv_source(drama_title)
                                 
                                 if direct_link:
@@ -102,7 +104,7 @@ def telegram_polling_worker():
                                     send_reply(user_chat_id, success_msg)
                                 else:
                                     fallback_url = f"http://microtv.one{drama_title.replace(' ', '+')}"
-                                    send_reply(user_chat_id, f"⚠️ डायरेक्ट लिंक नहीं मिला। आप यहाँ मैन्युअली चेक कर सकते हैं: {fallback_url}")
+                                    send_reply(user_chat_id, f"⚠️ डायरेक्ट लिंक नहीं मिला। आप यहाँ चेक कर सकते हैं: {fallback_url}")
                             else:
                                 send_reply(user_chat_id, "❌ कूकू टीवी लिंक से ड्रामा की जानकारी नहीं निकाली जा सकी।")
                                 
@@ -111,10 +113,10 @@ def telegram_polling_worker():
         time.sleep(1)
 
 if __name__ == "__main__":
-    # पोलिंग को अलग थ्रेड में शुरू करें
+    # पोलिंग को बैकग्राउंड थ्रेड में शुरू करें
     threading.Thread(target=telegram_polling_worker, daemon=True).start()
     
     # Render के लिए वेब सर्वर चालू करें
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-        
+    
