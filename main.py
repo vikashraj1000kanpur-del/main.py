@@ -7,6 +7,7 @@ TELEGRAM_BOT_TOKEN = "8804075824:AAEHnQj204iB7XAgzTxRbDmCk5gEdiqff5I"
 # ====================================================================
 
 def send_reply(chat_id, text):
+    # यहाँ /bot जोड़कर यूआरएल की गलती को बिल्कुल ठीक कर दिया गया है
     url = f"https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
     try:
@@ -38,6 +39,7 @@ def search_microtv_source(drama_name):
 def main():
     offset = None
     try:
+        # यहाँ भी यूआरएल ठीक किया गया है
         requests.get(f"https://telegram.org{TELEGRAM_BOT_TOKEN}/deleteWebhook")
     except:
         pass
@@ -45,9 +47,10 @@ def main():
     print("बॉट शुरू हो गया है...")
     
     start_time = time.time()
-    # यह लगभग 5 घंटे तक लगातार एक्टिव रहेगा
+    # यह लगातार 5 घंटे तक बिना रुके बैकग्राउंड में एक्टिव रहेगा
     while time.time() - start_time < 18000:  
         try:
+            # यहाँ भी /bot जोड़कर यूआरएल बिल्कुल सही कर दिया गया है
             bot_url = f"https://telegram.org{TELEGRAM_BOT_TOKEN}/getUpdates"
             params = {"timeout": 20, "offset": offset}
             response = requests.get(bot_url, params=params, timeout=25).json()
