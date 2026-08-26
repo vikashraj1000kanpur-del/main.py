@@ -5,17 +5,17 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask
 
-# ==================== सिर्फ अपना टेलीग्राम टोकन यहाँ डालें ====================
-TELEGRAM_BOT_TOKEN = "8804075824:AAGATUZhpndkYtD67doTp7QfUIxFq0ZVn-Y"
+# ==================== आपका नया टेलीग्राम टोकन ====================
+TELEGRAM_BOT_TOKEN = "8804075824:AAEHnQj204iB7XAgzTxRbDmCk5gEdiqff5I"
 # ====================================================================
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "MicroTV Downloader Bot is Running Automatically without Chat ID!"
+    return "MicroTV Automatic Downloader Bot is Running Perfect!"
 
-# रिप्लाई भेजने का फंक्शन (यह यूजर की आईडी खुद पकड़ लेगा)
+# टेलीग्राम पर रिप्लाई भेजने का ऑटोमैटिक फंक्शन
 def send_reply(chat_id, text):
     url = f"https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
@@ -24,7 +24,7 @@ def send_reply(chat_id, text):
     except Exception as e:
         print(f"Error sending message: {e}")
 
-# KukuTV से ड्रामा का नाम निकालना
+# KukuTV से ड्रामा का नाम (Title) निकालना
 def extract_drama_name(kuku_url):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
@@ -51,20 +51,21 @@ def search_microtv_source(drama_name):
             for link in links:
                 href = link.get('href')
                 text = link.text.strip().lower()
+                # अगर ड्रामा का नाम वेबसाइट के किसी लिंक टेक्स्ट से मैच होता है
                 if href and drama_name.lower() in text:
                     return href if href.startswith("http") else f"{microtv_url.rstrip('/')}/{href.lstrip('/')}"
     except Exception as e:
         print(f"Error searching on MicroTV: {e}")
     return None
 
-# टेलीग्राम से मैसेज ऑटोमैटिक रीड करने वाला वर्कर
+# टेलीग्राम से मैसेज ऑटो-रीड करने वाला मेन वर्कर
 def telegram_polling_worker():
     offset = None
     
-    # पुराना वेबहुक डिलीट करना ताकि पोलिंग मोड सही से चले
+    # पुराना कोई अटका हुआ वेबहुक हटाना ताकि नया टोकन सही से काम करे
     try:
         requests.get(f"https://telegram.org{TELEGRAM_BOT_TOKEN}/deleteWebhook")
-        print("[INFO] Webhook cleared for pure polling.")
+        print("[INFO] Webhook cleared for new token.")
     except:
         pass
 
@@ -82,31 +83,33 @@ def telegram_polling_worker():
                     
                     if "message" in update and "text" in update["message"]:
                         user_message = update["message"]["text"].strip()
-                        
-                        # यहाँ बॉट खुद ही सामने वाले की सही ID निकाल लेता है
                         user_chat_id = update["message"]["chat"]["id"] 
                         
-                        # 1. अगर कोई भी यूजर /start भेजता है
+                        # 1. जब कोई यूजर /start भेजता है
                         if user_message == "/start":
-                            send_reply(user_chat_id, "👋 <b>नमस्ते! आपका ऑटोमैटिक बॉट पूरी तरह एक्टिव है।</b>\n\nमुझे किसी भी KukuTV ड्रामा का लिंक भेजें, मैं उसका डाउनलोड लिंक ढूंढ कर दूंगा।")
+                            welcome_msg = (
+                                "👋 <b>नमस्ते! आपका नया ऑटोमैटिक बॉट पूरी तरह एक्टिव है।</b>\n\n"
+                                "मुझे किसी भी KukuTV ड्रामा का लिंक भेजें, मैं उसका डाउनलोड लिंक ढूंढ कर दूंगा।"
+                            )
+                            send_reply(user_chat_id, welcome_msg)
                         
-                        # 2. अगर कोई यूजर KukuTV का लिंक भेजता है
+                        # 2. जब कोई यूजर KukuTV का लिंक भेजता है
                         elif "kukutv" in user_message or "kuku.tv" in user_message:
                             send_reply(user_chat_id, "🔄 <b>लिंक मिल गया है! कूकू टीवी से ड्रामा की डिटेल्स निकाली जा रही हैं, कृपया रुकें...</b>")
                             
                             drama_title = extract_drama_name(user_message)
                             if drama_title:
-                                send_reply(user_chat_id, f"🔍 <b>ड्रामा नाम मिला:</b> {drama_title}\nअब MicroTV पर डायरेक्ट लिंक ढूंढा जा रहा है...")
+                                send_reply(user_chat_id, f"🔍 <b>ड्रामा नाम मिला:</b> {drama_title}\nअब MicroTV पर डायरेक्ट डाउनलोड लिंक ढूंढा जा रहा है...")
                                 direct_link = search_microtv_source(drama_title)
                                 
                                 if direct_link:
-                                    success_msg = f"✅ <b>सफलतापूर्वक लिंक मिल गया!</b>\n\n🎬 <b>ड्रामा:</b> {drama_title}\n📥 <a href='{direct_link}'>यहाँ क्लिक करके डायरेक्ट डाउनलोड करें</a>"
+                                    success_msg = f"✅ <b>सफलतापूर्वक लिंक मिल गया!</b>\n\n🎬 <b>कूकू ड्रामा:</b> {drama_title}\n📥 <a href='{direct_link}'>यहाँ क्लिक करके डायरेक्ट डाउनलोड करें</a>"
                                     send_reply(user_chat_id, success_msg)
                                 else:
                                     fallback_url = f"http://microtv.one{drama_title.replace(' ', '+')}"
                                     send_reply(user_chat_id, f"⚠️ डायरेक्ट लिंक नहीं मिला। आप यहाँ चेक कर सकते हैं: {fallback_url}")
                             else:
-                                send_reply(user_chat_id, "❌ कूकू टीवी लिंक से ड्रामा की जानकारी नहीं निकाली जा सकी।")
+                                send_reply(user_chat_id, "❌ कूकू टीवी लिंक से ड्राma की जानकारी नहीं निकाली जा सकी।")
                                 
         except Exception as e:
             print(f"Polling error: {e}")
